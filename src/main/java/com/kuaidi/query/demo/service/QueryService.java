@@ -1,10 +1,7 @@
 package com.kuaidi.query.demo.service;
 
 import java.io.IOException;
-import java.net.URL;
-import java.nio.charset.Charset;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -14,7 +11,6 @@ import com.alibaba.fastjson.JSON;
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.NicelyResynchronizingAjaxController;
 import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.util.Cookie;
@@ -41,23 +37,11 @@ public class QueryService {
     private String key;
     private static Set<Cookie> cookies =null;
     private static Integer failedTimes=0;
-    private static  HashMap<String, String> map;
-
-    static {
-        map = new HashMap<>(8);
-        map.put("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8");
-        map.put("Accept-Encoding","gzip, deflate, br");
-        map.put("Accept-Language","zh-CN,zh;q=0.9,en;q=0.8");
-        map.put("Cache-Control","max-age=0");
-        map.put("Connection","keep-alive");
-        map.put("Host","www.kuaidi100.com");
-        map.put("Upgrade-Insecure-Requests","1");
-        map.put("User-Agent","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36");
-    }
+    private static WebClient webClient = null;
 
     @PostConstruct
-    WebClient getWebClient() {
-        WebClient webClient = new WebClient(BrowserVersion.CHROME);
+    synchronized WebClient getWebClient() {
+        webClient = new WebClient(BrowserVersion.CHROME);
         webClient.getOptions().setJavaScriptEnabled(true);
         webClient.getOptions().setCssEnabled(false);
         webClient.getOptions().setUseInsecureSSL(true);
@@ -72,7 +56,6 @@ public class QueryService {
         }
         webClient.waitForBackgroundJavaScript(5000);
         cookies = webClient.getCookieManager().getCookies();
-        webClient.close();
         return webClient;
     }
 
@@ -92,35 +75,14 @@ public class QueryService {
         getWebClient();
     }
 
-    public static void main(String[] args) {
-        System.out.println(Math.random());
-    }
-    public ResultVO query(QueryRequest queryRequest) throws IOException {
-        log.info("query request: request={}",queryRequest);
-        String url=String.format("https://www.kuaidi100.com/query?type=%s&postid=%s&temp=%s&phone=%s",queryRequest.getType(),queryRequest.getPostId(),Math.random(),queryRequest.getPhone()==null?"":queryRequest.getPhone());
-        System.out.println(url);
-        URL link=new URL(url);
-        WebClient wc=new WebClient();
-        WebRequest request=new WebRequest(link);
-        request.setCharset(Charset.forName("UTF-8"));
-        request.setAdditionalHeaders(map);
-
-        //其他报文头字段可以根据需要添加
-        wc.getCookieManager().setCookiesEnabled(true);//开启cookie管理
-        wc.getOptions().setJavaScriptEnabled(true);//开启js解析。对于变态网页，这个是必须的
-        wc.getOptions().setCssEnabled(false);//开启css解析。对于变态网页，这个是必须的。
-        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
-        wc.getOptions().setThrowExceptionOnScriptError(false);
-        wc.getOptions().setTimeout(10000);
-        //设置cookie。如果你有cookie，可以在这里设置
-        Iterator<Cookie> i = cookies.iterator();
-        while (i.hasNext()){
-            wc.getCookieManager().addCookie(i.next());
-        }
-        HtmlPage  page = wc.getPage(request);
+    public synchronized ResultVO query(QueryRequest request) throws IOException {
+        log.info("query request: request={}",request);
+        cookies.forEach(item->{
+            webClient.getCookieManager().addCookie(item);
+        });
+        HtmlPage page = webClient.getPage(String.format("https://www.kuaidi100.com/query?type=%s&postid=%s&temp=%s&phone=%s",request.getType(),request.getPostId(),Math.random(),request.getPhone()==null?"":request.getPhone()));
         HtmlElement page1 = page.getBody();
         String response = page1.asText();
-        check(response);
         log.info("query response original: response={}",response);
         return JSON.parseObject(response, ResultVO.class);
     }
