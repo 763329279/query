@@ -38,7 +38,7 @@ public class QueryService {
     private String customer;
     @Value("${key}")
     private String key;
-    private static Set<Cookie> cookie=null;
+    private static Set<Cookie> cookies =null;
     private static Integer failedTimes=0;
     private static  HashMap<String, String> map;
 
@@ -70,7 +70,7 @@ public class QueryService {
             log.error("getPage init error",e);
         }
         webClient.waitForBackgroundJavaScript(10000);
-        cookie = webClient.getCookieManager().getCookies();
+        cookies = webClient.getCookieManager().getCookies();
         webClient.close();
         return webClient;
     }
@@ -107,8 +107,8 @@ public class QueryService {
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
         wc.getOptions().setThrowExceptionOnScriptError(false);
         wc.getOptions().setTimeout(10000);
-        for (Cookie cookie1 : cookie) {
-            wc.getCookieManager().addCookie(cookie1);
+        for (Cookie cookie : cookies) {
+            wc.getCookieManager().addCookie(cookie);
         }
         HtmlPage  page = wc.getPage(request);
         HtmlElement page1 = page.getBody();
