@@ -51,7 +51,7 @@ public class QueryController {
     @RequestMapping("/v1/api/query/reset")
     @ResponseBody
     public JsonResult reset(QueryRequest request) {
-        queryService.reset();
+        //queryService.reset();
         return ErrorCode.success();
     }
 

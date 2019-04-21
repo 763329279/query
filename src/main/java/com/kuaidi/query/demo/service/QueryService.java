@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -69,7 +70,7 @@ public class QueryService {
         } catch (IOException e) {
             log.error("getPage init error",e);
         }
-        webClient.waitForBackgroundJavaScript(10000);
+        webClient.waitForBackgroundJavaScript(5000);
         cookies = webClient.getCookieManager().getCookies();
         webClient.close();
         return webClient;
@@ -91,9 +92,13 @@ public class QueryService {
         getWebClient();
     }
 
+    public static void main(String[] args) {
+        System.out.println(Math.random());
+    }
     public ResultVO query(QueryRequest queryRequest) throws IOException {
         log.info("query request: request={}",queryRequest);
-        String url=String.format("https://www.kuaidi100.com/query?type=%s&postid=%s&temp=%f&phone=%s",queryRequest.getType(),queryRequest.getPostId(),Math.random(),queryRequest.getPhone()==null?"":queryRequest.getPhone());
+        String url=String.format("https://www.kuaidi100.com/query?type=%s&postid=%s&temp=%s&phone=%s",queryRequest.getType(),queryRequest.getPostId(),Math.random(),queryRequest.getPhone()==null?"":queryRequest.getPhone());
+        System.out.println(url);
         URL link=new URL(url);
         WebClient wc=new WebClient();
         WebRequest request=new WebRequest(link);
@@ -101,14 +106,16 @@ public class QueryService {
         request.setAdditionalHeaders(map);
 
         //其他报文头字段可以根据需要添加
-        wc.getCookieManager().setCookiesEnabled(true);
-        wc.getOptions().setJavaScriptEnabled(true);
-        wc.getOptions().setCssEnabled(false);
+        wc.getCookieManager().setCookiesEnabled(true);//开启cookie管理
+        wc.getOptions().setJavaScriptEnabled(true);//开启js解析。对于变态网页，这个是必须的
+        wc.getOptions().setCssEnabled(false);//开启css解析。对于变态网页，这个是必须的。
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
         wc.getOptions().setThrowExceptionOnScriptError(false);
         wc.getOptions().setTimeout(10000);
-        for (Cookie cookie : cookies) {
-            wc.getCookieManager().addCookie(cookie);
+        //设置cookie。如果你有cookie，可以在这里设置
+        Iterator<Cookie> i = cookies.iterator();
+        while (i.hasNext()){
+            wc.getCookieManager().addCookie(i.next());
         }
         HtmlPage  page = wc.getPage(request);
         HtmlElement page1 = page.getBody();
