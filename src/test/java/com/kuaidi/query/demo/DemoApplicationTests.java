@@ -27,7 +27,7 @@ public class DemoApplicationTests {
 
     @Test
     public void contextLoads() throws Exception {
-        ResultActions actions = get("/v1/api/query?type=wjkwl&postId=2600970356");
+        ResultActions actions = get("/v1/api/query?type=wjkwl&postId=414226368235791356");
         actions.andExpect(MockMvcResultMatchers.jsonPath("code").value(200));
     }
 

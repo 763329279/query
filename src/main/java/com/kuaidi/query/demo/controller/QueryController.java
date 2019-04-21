@@ -45,13 +45,20 @@ public class QueryController {
             }
         }
         ResultVO resultVO = queryService.query(request);
-        return ErrorCode.success(resultVO);
+        return ErrorCode.success(ResultVO.addState(resultVO));
+    }
+
+    @RequestMapping("/v1/api/query/reset")
+    @ResponseBody
+    public JsonResult reset(QueryRequest request) {
+        queryService.reset();
+        return ErrorCode.success();
     }
 
     /**
      * restAPI 请求
      */
-    @RequestMapping("/v1/api/kuaidi100/query")
+    @RequestMapping("/v1/api/kuaidi/query")
     @ResponseBody
     public JsonResult queryApi(QueryRequest request){
         ValidatorHelper.validator(request);
@@ -61,7 +68,7 @@ public class QueryController {
             }
         }
         ResultVO resultVO = queryService.queryApi(request);
-        return ErrorCode.success(resultVO);
+        return ErrorCode.success(ResultVO.addState(resultVO));
     }
 
     /**

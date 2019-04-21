@@ -48,24 +48,31 @@ public class ResultVO {
      */
     private List<DateIteam> data;
 
-
+   public static ResultVO addState(ResultVO resultVO) {
+       List<DateIteam> data = resultVO.getData();
+       for (DateIteam dateIteam : data) {
+           dateIteam.setState(resultVO.getState());
+       }
+       return resultVO;
+   }
 
     @Getter
     @Setter
     public static class DateIteam {
 
-
+        /**
+         * 快递单当前签收状态，包括0在途中、1已揽收、2疑难、3已签收、4退签、5同城派送中、6退回、7转单等7个状态
+         */
+        private Integer state;
         /**
          * 内容
          */
         private String context;
 
-
         /**
          * 时间
          */
         private Date ftime;
-
 
     }
 }
