@@ -80,6 +80,14 @@ public class QueryService {
         cookies.forEach(item->{
             webClient.getCookieManager().addCookie(item);
         });
+        webClient.addRequestHeader("Accept","application/json, text/javascript, */*; q=0.01");
+        webClient.addRequestHeader("Accept-Encoding","gzip, deflate, br");
+        webClient.addRequestHeader("Accept-Language","zh-CN,zh;q=0.9,en;q=0.8");
+        webClient.addRequestHeader("Connection","keep-alive");
+        webClient.addRequestHeader("Host","www.kuaidi100.com");
+        webClient.addRequestHeader("Referer","https://www.kuaidi100.com/");
+        webClient.addRequestHeader("User-Agent","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36");
+        webClient.addRequestHeader("X-Requested-With","XMLHttpRequest");
         HtmlPage page = webClient.getPage(String.format("https://www.kuaidi100.com/query?type=%s&postid=%s&temp=%s&phone=%s",request.getType(),request.getPostId(),Math.random(),request.getPhone()==null?"":request.getPhone()));
         HtmlElement page1 = page.getBody();
         String response = page1.asText();
